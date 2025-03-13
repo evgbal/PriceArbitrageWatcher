@@ -1,0 +1,18 @@
+<resources>
+    <!-- Base application theme. -->
+    <style name="Theme.PriceArbitrageWatcher" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary colors -->
+        <item name="colorPrimary">@color/colorDarkPrimary</item>
+        <item name="colorPrimaryVariant">@color/colorDarkPrimaryVariant</item>
+        <item name="colorOnPrimary">@color/colorDarkOnPrimary</item>
+
+        <!-- Secondary colors -->
+        <item name="colorSecondary">@color/colorDarkSecondary</item>
+        <item name="colorSecondaryVariant">@color/colorDarkSecondaryVariant</item>
+        <item name="colorOnSecondary">@color/colorDarkOnSecondary</item>
+
+        <item name="colorStatusSilverIcon">@color/textSecondary</item>
+        <item name="colorDivider">@color/DarkDivider</item>
+        <item name="colorRecyclerItem">@color/colorDarkRecyclerItem</item>
+    </style>
+</resources>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/wizard_nav_graph.xml"
+    app:startDestination="@id/exchangeArbitrageFragment">
+
+    <fragment
+        android:id="@+id/priceMonitorFragment"
+        android:name="org.bea.pricearbitragewatcher.ui.PriceMonitorFragment"
+        tools:layout="@layout/fragment_price_monitor">
+        <action
+            android:id="@+id/action_priceMonitorFragment_to_exchangeArbitrageFragment"
+            app:destination="@id/exchangeArbitrageFragment"
+            app:enterAnim="@anim/enter_animation"
+            app:exitAnim="@anim/exit_animation"
+            app:popEnterAnim="@anim/pop_enter_animation"
+            app:popExitAnim="@anim/pop_exit_animation"
+
+            />
+    </fragment>
+
+    <fragment
+        android:id="@+id/exchangeArbitrageFragment"
+        android:name="org.bea.pricearbitragewatcher.ui.ExchangeArbitrageFragment"
+        tools:layout="@layout/fragment_price_monitor">
+        <action
+            android:id="@+id/action_exchangeArbitrageFragment_to_priceMonitorFragment"
+            app:destination="@id/priceMonitorFragment"
+            app:enterAnim="@anim/enter_animation"
+            app:exitAnim="@anim/exit_animation"
+            app:popEnterAnim="@anim/pop_enter_animation"
+            app:popExitAnim="@anim/pop_exit_animation"
+
+            />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/currencyPairSelectionFragment"
+        android:name="org.bea.pricearbitragewatcher.ui.CurrencyPairSelectionFragment"
+        tools:layout="@layout/fragment_currency_pair_selection">
+        <action
+            android:id="@+id/action_exchangeArbitrageFragment_to_currencyPairSelectionFragment"
+            app:destination="@id/currencyPairSelectionFragment"
+            app:enterAnim="@anim/enter_animation"
+            app:exitAnim="@anim/exit_animation"
+            app:popEnterAnim="@anim/pop_enter_animation"
+            app:popExitAnim="@anim/pop_exit_animation"
+
+            />
+
+    </fragment>
+
+
+    <fragment
+        android:id="@+id/aboutFragment"
+        android:name="org.bea.pricearbitragewatcher.ui.AboutFragment"
+        tools:layout="@layout/fragment_about">
+        <action
+            android:id="@+id/aboutFragment_to_action_exchangeArbitrageFragment"
+            app:destination="@id/exchangeArbitrageFragment"
+            app:enterAnim="@anim/enter_animation"
+            app:exitAnim="@anim/exit_animation"
+            app:popEnterAnim="@anim/pop_enter_animation"
+            app:popExitAnim="@anim/pop_exit_animation"
+
+            />
+
+    </fragment>
+
+</navigation>

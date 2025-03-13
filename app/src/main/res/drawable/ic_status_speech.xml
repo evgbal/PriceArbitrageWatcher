@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="16dp"
+    android:height="16dp"
+    android:viewportWidth="16"
+    android:viewportHeight="16">
+
+    <!-- White Halo (Outer Circle) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M8,0A8,8 0 1,0 16,8A8,8 0 0,0 8,0Z" />
+
+
+    <!-- Green Circle (Inner Circle, Increased by 1dp) -->
+    <path
+        android:fillColor="#4CAF50"
+        android:pathData="M8,1A7,7 0 1,0 15,8A7,7 0 0,0 8,1Z" />
+    <!-- First White Line (Shortest: 2dp, Centered) -->
+    <path
+        android:pathData="M6,7L6,9"
+        android:strokeWidth="1"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round" />
+
+    <!-- Second White Line (Longest: 6dp, Centered) -->
+    <path
+        android:pathData="M8,5L8,11"
+        android:strokeWidth="1"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round" />
+
+    <!-- Third White Line (Medium: 4dp, Centered) -->
+    <path
+        android:pathData="M10,6L10,10"
+        android:strokeWidth="1"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round" />
+
+</vector>
