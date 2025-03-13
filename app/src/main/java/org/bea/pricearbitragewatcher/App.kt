@@ -56,17 +56,17 @@ class App : Application() {
 
         applicationScope.launch {
             //marketPairsRepository.checkAndUpdateMarkets() // Ждем загрузки инструментов
-
-            combine(
-                marketPairsRepository.coinExPairs,
-                marketPairsRepository.gateIoPairs,
-                marketPairsRepository.huobiPairs
-            ) { coinEx, gateIo, huobi ->
-                coinEx.isNotEmpty() && gateIo.isNotEmpty() && huobi.isNotEmpty()
-            }.filter { it }.first() // Ждем, пока все списки будут непустыми
-
             withContext(Dispatchers.IO) {
                 marketPairsRepository.checkAndUpdateMarkets()
+
+                combine(
+                    marketPairsRepository.coinExPairs,
+                    marketPairsRepository.gateIoPairs,
+                    marketPairsRepository.huobiPairs
+                ) { coinEx, gateIo, huobi ->
+                    coinEx.isNotEmpty() && gateIo.isNotEmpty() && huobi.isNotEmpty()
+                }.filter { it }.first() // Ждем, пока все списки будут непустыми
+
                 selectedPairRepository.loadPairs()
 
                 val selectedPairs = selectedPairRepository.selectedPairs.first()
