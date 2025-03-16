@@ -1,5 +1,6 @@
 package org.bea.pricearbitragewatcher.ui
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -33,7 +34,15 @@ class PriceMonitorFragment : Fragment() {
 
     //
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+        super.onViewCreated(view, savedInstanceState )
+
+        loadSvgFromAssets(binding.imageGateIo, "gate_io_logo_h_text.svg"
+            , dpToPx(160, requireContext()), dpToPx(80, requireContext()))
+        loadSvgFromAssets(binding.imageHuobi, "huobi_logo_h_text.svg"
+            , dpToPx(160, requireContext()), dpToPx(80, requireContext()))
+        loadSvgFromAssets(binding.imageCoinEx, "coinex_logo_h_text.svg"
+            , dpToPx(160, requireContext()), dpToPx(80, requireContext()))
+
 
         try {
 
@@ -103,5 +112,9 @@ class PriceMonitorFragment : Fragment() {
 
     }
 
+
+    fun dpToPx(dp: Int, context: Context): Int {
+        return (dp * context.resources.displayMetrics.density).toInt()
+    }
 
 }

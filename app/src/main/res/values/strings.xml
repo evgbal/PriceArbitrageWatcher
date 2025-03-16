@@ -1,33 +1,8 @@
 <resources>
     <string name="app_name">Price Arbitrage Watcher</string>
-    <string name="chat_avatar">description</string>
-    <string name="user_name">User Name</string>
-    <string name="_12_34">12:34</string>
-    <string name="last_message_in_chat">Last message in chat</string>
-    <string name="speech_status">Speech status</string>
-    <string name="mute_channel">Mute channel</string>
-    <string name="chat_last_user">Last user</string>
-    <string name="archive">Archive</string>
-    <string name="end_of_shadow">End of shadow</string>
-    <string name="answered_to_you_status">Answered</string>
-    <string name="pinned_status">Pinned</string>
-    <string name="verified_channel">Verified</string>
-    <string name="answered_channel">Answered</string>
-    <string name="answered_and_opponent_readed_channel">Answered and opponent readed</string>
-    <string name="scam_channel">Scam</string>
-    <string name="lock_channel">Lock channel</string>
-    <string name="chat_topic">Topic</string>
-    <string name="margin_topic_channel">Margin topic</string>
-    <string name="typing_channel">Typing</string>
-    <string name="typing">typing</string>
-    <string name="answerer_channel">Answerer</string>
-    <string name="unread_count">101011</string>
     <string name="main_menu">Main menu</string>
-    <string name="recycler_view">Telegram</string>
     <string name="home">Home</string>
     <string name="exit">Exit</string>
-    <string name="username">Username</string>
-    <string name="avatar">Avatar</string>
     <string name="navigation_drawer_open">Navigation drawer open</string>
     <string name="navigation_drawer_close">Navigation drawer close</string>
     <string name="settings">Settings</string>
@@ -37,8 +12,6 @@
     <string name="settings_selected">Settings selected</string>
     <string name="about_selected">About selected</string>
     <string name="invalid_view_type">Invalid view type</string>
-    <string name="new_message">New message</string>
-    <string name="write_new_message">Write new message</string>
     <string name="search_pair">Search pair</string>
     <string name="all_on">All on</string>
     <string name="all_off">All off</string>
@@ -47,4 +20,11 @@
     <string name="_1_0_0">Version: 1.0.0</string>
     <string name="version_format">Version: %s</string>
     <string name="monitor">Monitor</string>
+    <string name="gate_io_logo">Gate.io Logo</string>
+    <string name="huobi_logo">Huobi Logo</string>
+    <string name="coinex_logo">CoinEx Logo</string>
+    <string name="textview_gateio">textView_GateIo</string>
+    <string name="textview_coinex">textView_CoinEx</string>
+    <string name="textview_huobi">textView_Huobi</string>
+    <string name="app_logo">Application logo</string>
 </resources>

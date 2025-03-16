@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import org.bea.pricearbitragewatcher.R
 import org.bea.pricearbitragewatcher.data.ArbitrageRoute
+import org.bea.pricearbitragewatcher.databinding.ItemExchangeArbitrageBinding
 
 class ExchangeArbitrageAdapter : ListAdapter<ArbitrageRoute, ExchangeArbitrageAdapter.ArbitrageViewHolder>(
     object : DiffUtil.ItemCallback<ArbitrageRoute>() {
@@ -25,21 +26,48 @@ class ExchangeArbitrageAdapter : ListAdapter<ArbitrageRoute, ExchangeArbitrageAd
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         ArbitrageViewHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.item_exchange_arbitrage, parent, false)
+            ItemExchangeArbitrageBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         )
 
     override fun onBindViewHolder(holder: ArbitrageViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
 
-    class ArbitrageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class ArbitrageViewHolder(private val binding: ItemExchangeArbitrageBinding) : RecyclerView.ViewHolder(binding.root) {
+
         fun bind(route: ArbitrageRoute) {
-            itemView.findViewById<TextView>(R.id.textArbitrage).text =
-                buildString {
-                    append("${route.baseSymbol}/${route.quoteSymbol} | ")
-                    append("${route.startExchange} -> ${route.endExchange} | ")
-                    append("Profit: ${"%.2f".format(route.profitPercentage)}%")
-                }
+            // Заполняем текст с валютами
+            "${route.baseSymbol}/${route.quoteSymbol}".also { binding.textSymbol.text = it }
+
+            // Заполняем текст с ценой покупки (Bid)
+            "Buy: ${"%.8f".format(route.startBid)}".also { binding.textBuy.text = it }
+
+            // Заполняем текст с ценой продажи (Ask)
+            "Sell: ${"%.8f".format(route.endAsk)}".also { binding.textSell.text = it }
+
+            // Заполняем текст с профитом
+            "${"%.2f".format(route.profitPercentage)}%".also { binding.textProfit.text = it }
+
+            // Привязка логотипов бирж
+            binding.imageStartExchange.setImageResource(getExchangeLogo(route.startExchange))
+            binding.imageEndExchange.setImageResource(getExchangeLogo(route.endExchange))
         }
+
+        private fun getExchangeLogo(exchangeName: String): Int {
+            return when (exchangeName) {
+                "Gate.io" -> R.drawable.gate_io_logo_no_text_512
+                "Huobi" -> R.drawable.huobi_logo_no_text_512
+                "CoinEx" -> R.drawable.coin_ex_logo_no_text_512
+                else -> android.R.color.transparent
+            }
+        }
+
+//        fun bind(route: ArbitrageRoute) {
+//            binding.textArbitrage.text = buildString {
+//                append("${route.baseSymbol}/${route.quoteSymbol} | ")
+//                append("${route.startExchange} -> ${route.endExchange} | ")
+//                append("Profit: ${"%.2f".format(route.profitPercentage)}%")
+//            }
+//        }
     }
 }

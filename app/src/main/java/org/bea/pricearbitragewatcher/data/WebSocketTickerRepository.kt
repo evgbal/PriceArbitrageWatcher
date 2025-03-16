@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -32,6 +33,7 @@ import javax.inject.Singleton
 class WebSocketTickerRepository @Inject constructor(
     private val tickerDao: TickerDao,
     private val marketPairsRepository: MarketPairsRepository,
+    private val selectedPairRepository: SelectedPairRepository,
     private val arbitrageRouteDao: ArbitrageRouteDao,
     private val currencyPairDao: CurrencyPairDao
 
@@ -64,7 +66,9 @@ class WebSocketTickerRepository @Inject constructor(
                 }.catch { e ->
                     Log.e("WebSocket", "Ошибка в combine WebSocket потоков", e)
                 }.collect { tickers ->
-                    val filteredTickers = tickers.filter { it.symbol.isNotBlank() }
+                    val selectedPair = selectedPairRepository.selectedPairs.first()
+                    val selectedPairSet = HashSet(selectedPair)
+                    val filteredTickers = tickers.filter { it.symbol.isNotBlank() && selectedPairSet.contains(it.symbol) }
                     if (filteredTickers.isNotEmpty()) {
                         try {
                             tickerDao.insertTickers(filteredTickers)

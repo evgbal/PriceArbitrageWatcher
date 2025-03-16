@@ -1,25 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="160dp"
+    android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="?attr/colorPrimary"
     android:gravity="center"
-    android:orientation="vertical">
+    android:orientation="vertical"
+
+    >
 
     <ImageView
         android:layout_width="72dp"
         android:layout_height="72dp"
         android:src="@drawable/ic_finance"
         android:layout_marginBottom="8dp"
-        android:contentDescription="@string/avatar"
+        android:contentDescription="@string/app_logo"
         app:itemIconTint="?attr/colorOnPrimary"
+        android:layout_marginTop="36dp"
         />
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/price_arbitrage_watcher"
         android:textColor="?attr/colorOnPrimary"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="36dp"
+        />
 </LinearLayout>

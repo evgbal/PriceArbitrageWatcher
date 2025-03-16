@@ -35,6 +35,7 @@ class CoinExWebSocketClient @Inject constructor(
     private val retryIntervalMillis: Long = 5000
     private var isConnecting =
         java.util.concurrent.atomic.AtomicBoolean(false) // Флаг состояния подключения
+    private var lastSymbols: List<String> = listOf()
 
     @Synchronized
     fun connect(symbols: List<String>): Flow<String> = callbackFlow {
@@ -54,6 +55,18 @@ class CoinExWebSocketClient @Inject constructor(
         val listener = object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 this@CoinExWebSocketClient.webSocket = webSocket
+                val symbolsSet = HashSet(symbols)
+                val symbolsDiff = lastSymbols.filter { !symbolsSet.contains(it) }
+                if (symbolsDiff.isNotEmpty()) {
+                    val subscriptionMessage = CoinExSubscriptionMessage(
+                        method = "bbo.unsubscribe",
+                        params = symbolsDiff,
+                        id = System.currentTimeMillis().toInt()
+                    )
+                    val message = Gson().toJson(subscriptionMessage)
+                    webSocket.send(message)
+                }
+
                 val subscriptionMessage = CoinExSubscriptionMessage(
                     method = "bbo.subscribe",
                     params = symbols,
@@ -61,6 +74,8 @@ class CoinExWebSocketClient @Inject constructor(
                 )
                 val message = Gson().toJson(subscriptionMessage)
                 webSocket.send(message)
+
+                lastSymbols = symbols
             }
 
             override fun onMessage(webSocket: WebSocket, text: String) {

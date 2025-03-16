@@ -46,6 +46,7 @@ class HuobiWebSocketClient @Inject constructor(
     private var resubscribeJob: Job? = null
     private val retryIntervalMillis: Long = 5000
     private var isConnecting = AtomicBoolean(false) // Флаг состояния подключения
+    private var lastSymbols: List<String> = listOf()
 
     @Synchronized
     fun connect(symbols: List<String>): Flow<String> = callbackFlow {
@@ -164,6 +165,20 @@ class HuobiWebSocketClient @Inject constructor(
     }
 
     private fun subscribeToSymbols(symbols: List<String>) {
+        val symbolsSet = HashSet(symbols)
+        val symbolsDiff = lastSymbols.filter { !symbolsSet.contains(it) }
+        if (symbolsDiff.isNotEmpty()) {
+            symbols.forEach { symbol ->
+                val unsubscriptionMessage = HuobiUnsubscriptionMessage(
+                    unsub = "market.$symbol.ticker",
+                    id = System.currentTimeMillis().toString()
+                )
+                val message = Gson().toJson(unsubscriptionMessage)
+                webSocket?.send(message)
+                Log.d(TAG, "Отписка отправлена: $message")
+            }
+        }
+
         symbols.forEach { symbol ->
             val subscriptionMessage = HuobiSubscriptionMessage(
                 sub = "market.$symbol.ticker",
@@ -173,6 +188,7 @@ class HuobiWebSocketClient @Inject constructor(
             webSocket?.send(message)
             Log.d(TAG, "Подписка отправлена: $message")
         }
+        lastSymbols = symbols
     }
 
     private fun startResubscribeLoop(symbols: List<String>) {
@@ -206,5 +222,10 @@ class HuobiWebSocketClient @Inject constructor(
 
 data class HuobiSubscriptionMessage(
     val sub: String,
+    val id: String
+)
+
+data class HuobiUnsubscriptionMessage(
+    val unsub: String,
     val id: String
 )

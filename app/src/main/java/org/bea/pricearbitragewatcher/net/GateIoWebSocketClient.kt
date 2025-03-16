@@ -35,6 +35,7 @@ class GateIoWebSocketClient @Inject constructor(
     private var webSocket: WebSocket? = null
     private val retryIntervalMillis: Long = 5000
     private var isConnecting = AtomicBoolean(false) // Флаг состояния подключения
+    private var lastSymbols: List<String> = listOf()
 
     @Synchronized
     fun connect(symbols: List<String>): Flow<String> = callbackFlow {
@@ -54,6 +55,18 @@ class GateIoWebSocketClient @Inject constructor(
         val listener = object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 this@GateIoWebSocketClient.webSocket = webSocket
+                val symbolsSet = HashSet(symbols)
+                val symbolsDiff = lastSymbols.filter { !symbolsSet.contains(it) }
+                if (symbolsDiff.isNotEmpty()) {
+                    val subscriptionMessage = SubscriptionMessage(
+                        channel = "spot.tickers",
+                        payload = symbolsDiff,
+                        event = "unsubscribe"
+                    )
+                    val message = Gson().toJson(subscriptionMessage)
+                    webSocket.send(message)
+                }
+
                 val subscriptionMessage = SubscriptionMessage(
                     channel = "spot.tickers",
                     payload = symbols
