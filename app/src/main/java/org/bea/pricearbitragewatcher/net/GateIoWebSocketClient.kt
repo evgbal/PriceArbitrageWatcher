@@ -3,6 +3,7 @@ package org.bea.pricearbitragewatcher.net
 import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -36,6 +37,7 @@ class GateIoWebSocketClient @Inject constructor(
     private val retryIntervalMillis: Long = 5000
     private var isConnecting = AtomicBoolean(false) // Флаг состояния подключения
     private var lastSymbols: List<String> = listOf()
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     @Synchronized
     fun connect(symbols: List<String>): Flow<String> = callbackFlow {
@@ -76,7 +78,7 @@ class GateIoWebSocketClient @Inject constructor(
             }
 
             override fun onMessage(webSocket: WebSocket, text: String) {
-                CoroutineScope(Dispatchers.IO).launch {
+                scope.launch {
                     _messageFlow.emit(text)
                 }
             }
@@ -84,7 +86,7 @@ class GateIoWebSocketClient @Inject constructor(
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 isConnecting.set(false)
                 closeWebSocketIfNeeded()
-                CoroutineScope(Dispatchers.IO).launch {
+                scope.launch {
                     delay(retryIntervalMillis) // Фиксированная задержка
                     connect(symbols).collect { trySend(it) }
                 }
@@ -93,7 +95,7 @@ class GateIoWebSocketClient @Inject constructor(
             override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
                 isConnecting.set(false)
                 closeWebSocketIfNeeded()
-                CoroutineScope(Dispatchers.IO).launch {
+                scope.launch {
                     delay(retryIntervalMillis) // Переподключение после закрытия
                     connect(symbols).collect { trySend(it) }
                 }
@@ -107,7 +109,7 @@ class GateIoWebSocketClient @Inject constructor(
             closeWebSocketIfNeeded()
         }
     }.shareIn(
-        CoroutineScope(Dispatchers.IO),
+        scope,
         SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000),
         replay = 1
     )

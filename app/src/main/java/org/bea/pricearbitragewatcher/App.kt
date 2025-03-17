@@ -96,6 +96,7 @@ class App : Application() {
         subscribeToCoinExUseCase.stop()
         subscribeToGateIoUseCase.stop()
         subscribeToHuobiUseCase.stop()
+        webSocketTickerRepository.stopAllJobs()
         (applicationScope as? CoroutineScope)?.cancel() // Явная отмена скоупа
     }
 }

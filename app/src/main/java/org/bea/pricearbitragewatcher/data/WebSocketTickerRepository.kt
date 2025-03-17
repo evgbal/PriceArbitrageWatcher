@@ -6,6 +6,7 @@ import com.google.gson.JsonObject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,13 +14,20 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.bea.pricearbitragewatcher.data.Constants.Companion.COIN_EX
 import org.bea.pricearbitragewatcher.data.Constants.Companion.GATE_IO
 import org.bea.pricearbitragewatcher.data.Constants.Companion.HUOBI
+import org.bea.pricearbitragewatcher.net.CoinExOrderBookResponse
+import org.bea.pricearbitragewatcher.net.CoinExV2Api
 import org.bea.pricearbitragewatcher.net.CoinExWebSocketClient
+import org.bea.pricearbitragewatcher.net.GateIoOrderBookResponse
 import org.bea.pricearbitragewatcher.net.GateIoWebSocketClient
+import org.bea.pricearbitragewatcher.net.GateIoWsV4Api
+import org.bea.pricearbitragewatcher.net.HuobiOrderBookResponse
+import org.bea.pricearbitragewatcher.net.HuobiProV1Api
 import org.bea.pricearbitragewatcher.net.HuobiWebSocketClient
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -35,8 +43,10 @@ class WebSocketTickerRepository @Inject constructor(
     private val marketPairsRepository: MarketPairsRepository,
     private val selectedPairRepository: SelectedPairRepository,
     private val arbitrageRouteDao: ArbitrageRouteDao,
-    private val currencyPairDao: CurrencyPairDao
-
+    private val currencyPairDao: CurrencyPairDao,
+    private val coinExApi: CoinExV2Api,
+    private val gateIoApi: GateIoWsV4Api,
+    private val huobiApi: HuobiProV1Api
 ) {
 
     private val _arbitrageRoutes = MutableStateFlow<List<ArbitrageRoute>>(emptyList())
@@ -44,9 +54,12 @@ class WebSocketTickerRepository @Inject constructor(
 
     private var job: Job? = null
     fun collectWebSocketData() {
-        job?.cancel()
+        stopAllJobs()
+        //job?.cancel()
         job = CoroutineScope(Dispatchers.IO).launch {
             try {
+                startRestApiPolling() // Запускаем REST API опрос
+
                 combine(
                     CoinExWebSocketClient.messageFlow.map { COIN_EX to it }
                         .catch { e -> Log.e("WebSocket", "Ошибка CoinEx WS", e) },
@@ -300,6 +313,96 @@ class WebSocketTickerRepository @Inject constructor(
     }
 
 
+
+
+
+    private var restApiJob: Job? = null
+
+    fun startRestApiPolling() {
+        restApiJob?.cancel()
+        restApiJob = CoroutineScope(Dispatchers.IO).launch {
+            while (isActive) {
+                try {
+                    val selectedPairs = selectedPairRepository.selectedPairs.first()
+
+                    // Ограничиваем скорость запросов до 10 в секунду
+                    selectedPairs.chunked(10).forEach { chunk ->
+                        chunk.forEach { symbol ->
+                            launch {
+                                fetchRestData(symbol)
+                            }
+                        }
+                        delay(1000) // 10 запросов в секунду (1000ms / 10)
+                    }
+
+                } catch (e: Exception) {
+                    Log.e("RestAPI", "Ошибка при запросе данных через REST API", e)
+                }
+                delay(15_000) // Ждём 15 секунд перед следующим циклом
+                System.gc()
+                Runtime.getRuntime().gc()
+            }
+        }
+    }
+
+    private suspend fun fetchRestData(symbol: String) {
+        try {
+            val coinExData = marketPairsRepository.toExchangeTicket(symbol, COIN_EX)
+                ?.let { this.coinExApi.getOrderBook(it, limit = 5, merge = 1) }
+            val gateIoData = marketPairsRepository.toExchangeTicket(symbol, GATE_IO)
+                ?.let { this.gateIoApi.getOrderBook(it, limit = 5) }
+            val huobiData = marketPairsRepository.toExchangeTicket(symbol, HUOBI)
+                ?.let { this.huobiApi.getOrderBook(it) }
+
+            val tickers = listOfNotNull(
+                coinExData?.toTickerEntity(symbol, COIN_EX),
+                gateIoData?.toTickerEntity(symbol, GATE_IO),
+                huobiData?.toTickerEntity(symbol, HUOBI)
+            )
+
+            if (tickers.isNotEmpty()) {
+                tickerDao.insertTickers(tickers)
+            }
+
+        } catch (e: Exception) {
+            Log.e("RestAPI", "Ошибка при обработке REST API для $symbol", e)
+        }
+    }
+
+
+    fun stopAllJobs() {
+        job?.cancel()
+        job = null
+        restApiJob?.cancel()
+        restApiJob = null
+    }
+
+
+}
+
+
+fun CoinExOrderBookResponse.toTickerEntity(symbol: String, exchange: String): CurrentTickerEntity? {
+    return this.data.let {
+        val bid = it.bids.firstOrNull()?.get(0)?.toDoubleOrNull() ?: 0.0
+        val ask = it.asks.firstOrNull()?.get(0)?.toDoubleOrNull() ?: 0.0
+        CurrentTickerEntity(symbol, exchange, bid, ask, System.currentTimeMillis())
+    }
+}
+
+fun GateIoOrderBookResponse.toTickerEntity(symbol: String, exchange: String): CurrentTickerEntity? {
+    return this.let {
+        val bid = it.bids.firstOrNull()?.get(0)?.toDoubleOrNull() ?: 0.0
+        val ask = it.asks.firstOrNull()?.get(0)?.toDoubleOrNull() ?: 0.0
+        CurrentTickerEntity(symbol, exchange, bid, ask, System.currentTimeMillis())
+    }
+}
+
+fun HuobiOrderBookResponse.toTickerEntity(symbol: String, exchange: String): CurrentTickerEntity? {
+    return this.tick.let {
+        val bid = it.bids.firstOrNull()?.get(0) ?: 0.0
+        val ask = it.asks.firstOrNull()?.get(0) ?: 0.0
+        CurrentTickerEntity(symbol, exchange, bid, ask, System.currentTimeMillis())
+    }
 }
 
 
@@ -336,3 +439,7 @@ data class ArbitrageRoute(
         return result
     }
 }
+
+
+
+

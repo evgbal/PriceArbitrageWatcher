@@ -5,6 +5,7 @@ import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -47,6 +48,7 @@ class HuobiWebSocketClient @Inject constructor(
     private val retryIntervalMillis: Long = 5000
     private var isConnecting = AtomicBoolean(false) // Флаг состояния подключения
     private var lastSymbols: List<String> = listOf()
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     @Synchronized
     fun connect(symbols: List<String>): Flow<String> = callbackFlow {
@@ -90,7 +92,7 @@ class HuobiWebSocketClient @Inject constructor(
                         Log.e(TAG, "Ошибка от сервера: ${json.optString("err-msg")}")
                     }
                     else -> {
-                        CoroutineScope(Dispatchers.IO).launch {
+                        scope.launch {
                             _messageFlow.emit(text)
                         }
                     }
@@ -114,7 +116,7 @@ class HuobiWebSocketClient @Inject constructor(
                 closeWebSocketIfNeeded()
                 stopPing()
                 stopResubscribeLoop()
-                CoroutineScope(Dispatchers.IO).launch {
+                scope.launch {
                     delay(retryIntervalMillis)
                     connect(symbols).collect { trySend(it) }
                 }
@@ -126,7 +128,7 @@ class HuobiWebSocketClient @Inject constructor(
                 closeWebSocketIfNeeded()
                 stopPing()
                 stopResubscribeLoop()
-                CoroutineScope(Dispatchers.IO).launch {
+                scope.launch {
                     delay(retryIntervalMillis)
                     connect(symbols).collect { trySend(it) }
                 }
@@ -142,14 +144,14 @@ class HuobiWebSocketClient @Inject constructor(
             stopResubscribeLoop()
         }
     }.shareIn(
-        CoroutineScope(Dispatchers.IO),
+        scope,
         SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000),
         replay = 1
     )
 
     private fun startPing() {
         pingJob?.cancel()
-        pingJob = CoroutineScope(Dispatchers.IO).launch {
+        pingJob = scope.launch {
             while (isActive) {
                 delay(30000)
                 webSocket?.send("{\"ping\": ${System.currentTimeMillis()}}")
@@ -169,31 +171,39 @@ class HuobiWebSocketClient @Inject constructor(
         val symbolsDiff = lastSymbols.filter { !symbolsSet.contains(it) }
         if (symbolsDiff.isNotEmpty()) {
             symbols.forEach { symbol ->
-                val unsubscriptionMessage = HuobiUnsubscriptionMessage(
-                    unsub = "market.$symbol.ticker",
-                    id = System.currentTimeMillis().toString()
-                )
-                val message = Gson().toJson(unsubscriptionMessage)
-                webSocket?.send(message)
-                Log.d(TAG, "Отписка отправлена: $message")
+                try {
+                    val unsubscriptionMessage = HuobiUnsubscriptionMessage(
+                        unsub = "market.$symbol.ticker",
+                        id = System.currentTimeMillis().toString()
+                    )
+                    val message = Gson().toJson(unsubscriptionMessage)
+                    webSocket?.send(message)
+                    Log.d(TAG, "Отписка отправлена: $message")
+                } catch (ex: Exception) {
+                    Log.d(TAG, "Отписка отправлена: $ex")
+                }
             }
         }
 
         symbols.forEach { symbol ->
-            val subscriptionMessage = HuobiSubscriptionMessage(
-                sub = "market.$symbol.ticker",
-                id = System.currentTimeMillis().toString()
-            )
-            val message = Gson().toJson(subscriptionMessage)
-            webSocket?.send(message)
-            Log.d(TAG, "Подписка отправлена: $message")
+            try {
+                val subscriptionMessage = HuobiSubscriptionMessage(
+                    sub = "market.$symbol.ticker",
+                    id = System.currentTimeMillis().toString()
+                )
+                val message = Gson().toJson(subscriptionMessage)
+                webSocket?.send(message)
+                Log.d(TAG, "Подписка отправлена: $message")
+            } catch (ex: Exception) {
+                Log.d(TAG, "Подписка отправлена: $ex")
+            }
         }
         lastSymbols = symbols
     }
 
     private fun startResubscribeLoop(symbols: List<String>) {
         resubscribeJob?.cancel()
-        resubscribeJob = CoroutineScope(Dispatchers.IO).launch {
+        resubscribeJob = scope.launch {
             while (isActive) {
                 delay(300000) // Раз в 5 минут
                 Log.d(TAG, "Обновление подписки...")
