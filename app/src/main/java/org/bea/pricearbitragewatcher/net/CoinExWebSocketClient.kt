@@ -81,9 +81,10 @@ class CoinExWebSocketClient @Inject constructor(
             }
 
             override fun onMessage(webSocket: WebSocket, text: String) {
-                scope.launch {
-                    _messageFlow.emit(text)
-                }
+                //scope.launch {
+                //    _messageFlow.emit(text)
+                //}
+                _messageFlow.tryEmit(text)
             }
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {

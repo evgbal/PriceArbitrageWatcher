@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    >
+
+    <!--suppress AndroidDomInspection -->
+    <instrumentation
+            android:name="org.bea.pricearbitragewatcher.CustomTestRunner"
+            android:targetPackage="org.bea.pricearbitragewatcher"/>
+
+        <application android:name="org.bea.pricearbitragewatcher.CustomTestRunner"
+            android:usesCleartextTraffic="true">
+        </application>
+
+    <!--    <instrumentation-->
+<!--        android:name="dagger.hilt.android.testing.HiltTestRunner"-->
+<!--        android:targetPackage="org.bea.pricearbitragewatcher"/>-->
+
+<!--    <application android:name="dagger.hilt.android.testing.HiltTestApplication"-->
+<!--        android:usesCleartextTraffic="true">-->
+<!--    </application>-->
+</manifest>

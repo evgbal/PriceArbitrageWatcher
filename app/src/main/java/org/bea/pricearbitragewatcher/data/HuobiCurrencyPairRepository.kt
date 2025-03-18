@@ -5,7 +5,7 @@ import org.bea.pricearbitragewatcher.net.HuobiProV1Api
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-class HuobiCurrencyPairRepository @Inject constructor(
+open class HuobiCurrencyPairRepository @Inject constructor(
     private val api: HuobiProV1Api,
     private val currencyPairDao: HuobiCurrencyPairDao
 ) {

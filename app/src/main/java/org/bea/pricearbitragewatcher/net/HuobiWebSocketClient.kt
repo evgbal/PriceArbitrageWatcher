@@ -92,9 +92,10 @@ class HuobiWebSocketClient @Inject constructor(
                         Log.e(TAG, "Ошибка от сервера: ${json.optString("err-msg")}")
                     }
                     else -> {
-                        scope.launch {
-                            _messageFlow.emit(text)
-                        }
+                        //scope.launch {
+                        //    _messageFlow.emit(text)
+                        //}
+                        _messageFlow.tryEmit(text)
                     }
                 }
             }

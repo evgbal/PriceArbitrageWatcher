@@ -7,7 +7,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class SelectedPairRepository @Inject constructor(
+open class SelectedPairRepository @Inject constructor(
     private val selectedPairDao: SelectedPairDao,
     private val currencyPairDao: CurrencyPairDao
 ) {

@@ -18,7 +18,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class MarketPairsRepository @Inject constructor(
+open class MarketPairsRepository @Inject constructor(
     private val coinExMarketRepository: CoinExMarketRepository,
     private val gateIoCurrencyPairRepository: GateIoCurrencyPairRepository,
     private val huobiCurrencyPairRepository: HuobiCurrencyPairRepository,

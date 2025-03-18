@@ -5,7 +5,7 @@ import org.bea.pricearbitragewatcher.net.GateIoWsV4Api
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-class GateIoCurrencyPairRepository @Inject constructor(
+open class GateIoCurrencyPairRepository @Inject constructor(
     private val api: GateIoWsV4Api,
     private val currencyPairDao: GateIoCurrencyPairDao
 ) {

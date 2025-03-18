@@ -14,7 +14,7 @@ import org.bea.pricearbitragewatcher.data.SelectedPairRepository
 import javax.inject.Inject
 
 @HiltViewModel
-class CurrencyPairSelectionViewModel @Inject constructor(
+open class CurrencyPairSelectionViewModel @Inject constructor(
     private val marketPairsRepository: MarketPairsRepository,
     private val selectedPairRepository: SelectedPairRepository
 ) : ViewModel() {

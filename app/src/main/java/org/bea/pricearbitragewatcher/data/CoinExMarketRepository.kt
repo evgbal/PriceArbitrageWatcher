@@ -5,7 +5,7 @@ import org.bea.pricearbitragewatcher.net.CoinExV2Api
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-class CoinExMarketRepository @Inject constructor(
+open class CoinExMarketRepository @Inject constructor(
     private val api: CoinExV2Api,
     private val marketDao: CoinExMarketDao
 ) {
